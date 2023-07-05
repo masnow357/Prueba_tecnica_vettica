@@ -1,4 +1,5 @@
 using System;
+using System.Reflection.Metadata;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
@@ -8,8 +9,7 @@ namespace PruebaTecnica.Models
 	{
 		private readonly IConfiguration _configuration;
 
-		public ModelsContext(DbContextOptions<ModelsContext> options, IConfiguration configuration)
-			: base(options)
+		public ModelsContext(IConfiguration configuration)
 		{
 			_configuration = configuration;
 		}
@@ -20,7 +20,21 @@ namespace PruebaTecnica.Models
 			optionsBuilder.UseNpgsql(_configuration.GetConnectionString("ExampleConnection"));
 		}
 
-		public DbSet<User> Users { get; set; }
-	}
-}
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
 
+            modelBuilder.Entity<User>()
+                .HasKey(u => u.Id);
+
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Role)
+                .WithMany()
+                .HasForeignKey(u => u.RoleID);
+        }
+
+        public DbSet<User> Users { get; set; }
+        public DbSet<DocumentType> DocumentType { get; set; }
+        public DbSet<Role> Role { get; set; }
+
+    }
+}
